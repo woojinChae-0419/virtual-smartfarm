@@ -1,0 +1,97 @@
+# ===== Unity =====
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+[Uu]serSettings/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+.vs/
+ExportedObj/
+.consulo/
+*.csproj.user
+*.unityproj
+*.DS_Store
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+sysinfo.txt
+MemoryCaptures/
+Recordings/
+
+# Unity Package Manager
+/[Pp]ackages/packages-lock.json
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+htmlcov/
+*.log
+
+# PyTorch 모델 가중치
+*.pt
+*.pth
+checkpoints/
+runs/
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# ===== VSCode =====
+.vscode/
+*.code-workspace
+
+# ===== Windows =====
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ===== macOS =====
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# ===== 데이터셋 / 대용량 파일 =====
+data/
+datasets/
+*.zip
+*.tar.gz
+*.h5
+*.hdf5
