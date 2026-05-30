@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections.Generic;
 
 public class PlantStateController : MonoBehaviour
@@ -10,10 +10,13 @@ public class PlantStateController : MonoBehaviour
     public int growthStageCount = 0;
 
     private GreenhouseGenerator farm;
+    private PlantResponse responseManager;
+    private Dictionary<int, string> previousStates = new Dictionary<int, string>();
 
     void Start()
     {
-        farm = FindFirstObjectByType<GreenhouseGenerator>();
+        farm = FindAnyObjectByType<GreenhouseGenerator>();
+        responseManager = GetComponent<PlantResponse>();
     }
 
     public void ApplyDiagnoses(BatchDiagnosis batch)
@@ -33,8 +36,15 @@ public class PlantStateController : MonoBehaviour
 
             Renderer renderer = plant.GetComponent<Renderer>();
             if (renderer != null)
-            {
                 renderer.material.color = new Color(diag.color_r, diag.color_g, diag.color_b);
+
+            string prevState = previousStates.ContainsKey(diag.plant_id) ? previousStates[diag.plant_id] : "unknown";
+            if (prevState != diag.plant_class)
+            {
+                LogStateChange(diag.plant_id, prevState, diag.plant_class);
+                if (responseManager != null)
+                    responseManager.TriggerResponse(diag.plant_id, diag.plant_class, plant);
+                previousStates[diag.plant_id] = diag.plant_class;
             }
 
             switch (diag.plant_class)
@@ -44,6 +54,26 @@ public class PlantStateController : MonoBehaviour
                 case "water_shortage": waterShortageCount++; break;
                 case "growth_stage": growthStageCount++; break;
             }
+        }
+    }
+
+    void LogStateChange(int id, string prev, string now)
+    {
+        if (EventLogger.Instance == null) return;
+        if (prev == "unknown") return;
+
+        switch (now)
+        {
+            case "water_shortage":
+                EventLogger.Instance.Log($"Plant_{id:D2} 수분부족 감지 → 자동 급수 작동");
+                break;
+            case "disease":
+                EventLogger.Instance.Log($"Plant_{id:D2} 병해 감지 → 살균 처리 시작");
+                break;
+            case "healthy":
+                if (prev == "water_shortage") EventLogger.Instance.Log($"Plant_{id:D2} 수분 회복 완료");
+                else if (prev == "disease") EventLogger.Instance.Log($"Plant_{id:D2} 병해 처리 완료");
+                break;
         }
     }
 }
