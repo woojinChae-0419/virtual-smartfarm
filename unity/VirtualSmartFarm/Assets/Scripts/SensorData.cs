@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 [Serializable]
@@ -26,10 +26,15 @@ public class PlantDiagnosis
     public float color_r;
     public float color_g;
     public float color_b;
+    public string ai_class;
+    public float ai_confidence;
+    public bool ai_agrees;
 }
 
 [Serializable]
 public class BatchDiagnosis
 {
     public List<PlantDiagnosis> diagnoses = new List<PlantDiagnosis>();
+    public float avg_ai_confidence;
+    public float agreement_rate;
 }

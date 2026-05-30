@@ -28,7 +28,7 @@ public class DashboardUI : MonoBehaviour
     void OnGUI()
     {
         GUI.skin.label.fontSize = 14;
-        float w = 370f, h = 420f, pad = 15f;
+        float w = 370f, h = 520f, pad = 15f;
         Rect panel = new Rect(Screen.width - w - pad, pad, w, h);
         GUI.DrawTexture(panel, bgTex);
 
@@ -56,6 +56,15 @@ public class DashboardUI : MonoBehaviour
         DrawCount("  병해", stateController.diseaseCount, new Color(1f, 0.4f, 0.4f));
         DrawCount("  수분부족", stateController.waterShortageCount, new Color(1f, 0.9f, 0.3f));
         DrawCount("  성장중", stateController.growthStageCount, new Color(0.6f, 1f, 0.5f));
+
+        GUILayout.Space(10);
+        GUI.contentColor = new Color(0.6f, 0.9f, 1f);
+        GUILayout.Label("━ PyTorch AI 추론");
+        GUI.contentColor = Color.white;
+        GUILayout.Label($"  평균 신뢰도 {stateController.aiAvgConfidence:F3}");
+        GUI.contentColor = stateController.ruleAiAgreement > 0.9f ? new Color(0.4f, 1f, 0.4f) : new Color(1f, 0.7f, 0.3f);
+        GUILayout.Label($"  룰-AI 일치율 {stateController.ruleAiAgreement * 100f:F1}%");
+        GUI.contentColor = Color.white;
 
         GUILayout.Space(10);
         GUI.contentColor = new Color(0.6f, 0.9f, 1f);

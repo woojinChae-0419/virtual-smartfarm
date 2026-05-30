@@ -62,6 +62,9 @@ htmlcov/
 # PyTorch 모델 가중치
 *.pt
 *.pth
+*.npz
+ai_model/*.pt
+ai_model/*.npz
 checkpoints/
 runs/
 
