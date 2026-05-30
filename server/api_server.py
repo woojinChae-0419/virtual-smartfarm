@@ -1,65 +1,83 @@
-import json
-from fastapi import FastAPI, File, Form, UploadFile
+﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List
+import random
 import uvicorn
 
-app = FastAPI(
-    title="Virtual Smart Farm API",
-    description="Unity 3D 가상 온실 ↔ PyTorch AI 모델 연결 서버",
-    version="0.1.0",
-)
+app = FastAPI(title="Virtual Smart Farm API")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
+class SensorReading(BaseModel):
+    plant_id: int
+    temperature: float
+    humidity: float
+    soil_moisture: float
+    light: float
+
+
+class BatchSensorReading(BaseModel):
+    readings: List[SensorReading]
+
+
+class PlantDiagnosis(BaseModel):
+    plant_id: int
+    plant_class: str
+    confidence: float
+    color_r: float
+    color_g: float
+    color_b: float
+
+
+class BatchDiagnosis(BaseModel):
+    diagnoses: List[PlantDiagnosis]
+
+
+CLASS_COLORS = {
+    "healthy":        (0.30, 0.70, 0.30),
+    "disease":        (0.90, 0.20, 0.20),
+    "water_shortage": (0.95, 0.85, 0.20),
+    "growth_stage":   (0.60, 0.90, 0.40),
+}
+
+
+def classify_rule_based(reading: SensorReading):
+    """룰 기반 분류 (1학기 시제품 단계, 2학기에 학습 모델로 교체 예정)"""
+    if reading.soil_moisture < 30:
+        return "water_shortage", 0.90 + random.uniform(-0.05, 0.05)
+    if reading.temperature > 32 or reading.humidity > 90:
+        return "disease", 0.85 + random.uniform(-0.05, 0.05)
+    if reading.light > 700 and 20 < reading.temperature < 28:
+        return "growth_stage", 0.80 + random.uniform(-0.05, 0.05)
+    return "healthy", 0.92 + random.uniform(-0.05, 0.05)
+
+
 @app.get("/health")
-def health_check():
+def health():
     return {"status": "ok"}
 
 
-@app.post("/predict")
-async def predict(
-    image: UploadFile = File(..., description="식물 이미지 파일 (jpg/png)"),
-    sensor_data: str = Form(..., description='센서 JSON: {"temperature":25.0,"humidity":60.0,"soil_moisture":45.0,"illuminance":3000.0}'),
-):
-    """식물 상태 분류 추론
-
-    - **image**: Unity에서 촬영한 가상 식물 이미지
-    - **sensor_data**: 가상 센서 JSON (온도/습도/토양수분/조도)
-
-    Returns:
-        분류 결과 (class, confidence, probabilities)
-    """
-    # TODO: 센서 데이터 파싱 및 검증
-    sensors = json.loads(sensor_data)
-
-    # TODO: 이미지 바이트 읽기 및 전처리
-    image_bytes = await image.read()
-
-    # TODO: 실제 AI 모델 추론으로 교체
-    # from inference import predict as ai_predict
-    # result = ai_predict(image_bytes, sensors)
-
-    # 더미 응답
-    return {
-        "class": "healthy",
-        "class_id": 0,
-        "confidence": 0.95,
-        "probabilities": {
-            "healthy": 0.95,
-            "disease": 0.02,
-            "drought": 0.02,
-            "growth_stage": 0.01,
-        },
-        "sensor_data": sensors,
-    }
+@app.post("/predict_batch", response_model=BatchDiagnosis)
+def predict_batch(batch: BatchSensorReading):
+    diagnoses = []
+    for reading in batch.readings:
+        plant_class, conf = classify_rule_based(reading)
+        r, g, b = CLASS_COLORS[plant_class]
+        diagnoses.append(PlantDiagnosis(
+            plant_id=reading.plant_id,
+            plant_class=plant_class,
+            confidence=round(conf, 3),
+            color_r=r, color_g=g, color_b=b,
+        ))
+    return BatchDiagnosis(diagnoses=diagnoses)
 
 
 if __name__ == "__main__":
-    uvicorn.run("api_server:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
