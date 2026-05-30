@@ -1,149 +1,185 @@
-# 🌱 Virtual Smart Farm — AI 기반 가상 온실 시뮬레이션
+# 🌱 Virtual Smart Farm
 
+> AI 기반 가상 온실 시뮬레이션 시스템  
 > **군산대학교 임베디드소프트웨어학과 캡스톤 디자인 (1학기)**
 
----
-
-## 📸 시뮬레이션 미리보기
-
-![가상 온실 씬](docs/screenshot_unity.png)
-
-> Unity 6 LTS 기반 가상 온실 — 4개 베드 × 12개 식물 = 총 48개 식물 자동 배치
-> C# 스크립트(GreenhouseGenerator.cs)로 동적 생성
+![대시보드 스크린샷](docs/screenshot_dashboard.png)
 
 ---
 
-## 프로젝트 개요
+## 📌 프로젝트 개요
 
-멀티모달 AI(이미지 + 센서 데이터)를 활용하여 식물의 상태를 자동 진단하고,  
-Unity 3D 가상 온실 환경에서 다양한 시나리오를 시뮬레이션하는 시스템입니다.
+Unity 3D 가상 온실 환경에서 멀티 센서 데이터를 실시간 시뮬레이션하고, PyTorch 기반 분류 모델이 식물의 상태를 자동 진단하여 시각적으로 대응하는 스마트팜 시뮬레이션 시스템이다.
 
-- **이미지 인코더** (EfficientNet-B0): 식물 외형 이미지 분석
-- **센서 인코더** (MLP): 온도, 습도, 토양수분, 조도 데이터 처리
-- **융합 모델**: 두 모달리티를 결합하여 식물 상태 4클래스 분류
-- **Unity 3D**: 가상 온실 환경 렌더링 및 시뮬레이션 제어
-- **FastAPI 서버**: Unity ↔ AI 모델 간 통신 중계
+기존 라즈베리파이 + 실제 센서 기반 하드웨어 구성에서, **Unity 3D 가상환경**으로 전환하여 다음과 같은 이점을 확보:
 
----
-
-## 1학기 범위
-
-> 소프트웨어 시뮬레이션 + AI 모델 구현에 집중 (실제 하드웨어 없음, Unity 가상환경으로 대체)
-
-### 변경 사유
-
-| 기존 계획 | 변경된 계획 |
-|-----------|------------|
-| 라즈베리파이 + 실제 센서 구성 | Unity 3D 가상 시뮬레이션으로 대체 |
-
-**변경 이유:**
-- 재현성: 동일한 실험 조건을 언제든 재현 가능
-- 다양한 시나리오 테스트: 병해, 수분 부족 등 극단적 조건도 안전하게 실험
-- 하드웨어 의존성 제거: 개발 및 테스트 환경의 안정성 확보
-- 빠른 프로토타이핑: 하드웨어 조달 없이 즉시 개발 가능
+- **재현성**: 동일 조건 반복 실험 가능
+- **시나리오 다양성**: 가뭄, 병해 등 극단 환경 시뮬레이션
+- **확장성**: 식물 수, 베드 구조 자유 조정
+- **안전성**: 하드웨어 손상 위험 없음
 
 ---
 
-## 시스템 아키텍처
+## 🎯 주요 기능
+
+- **실시간 센서 시뮬레이션** — 48개 식물에 대해 온도/습도/토양수분/조도 4채널 데이터 생성
+- **멀티모달 분류기** — 룰 기반 + PyTorch MLP 학습 모델 병행 추론
+- **자동 대응 시각화** — 수분부족 시 급수 파티클, 병해 시 살균 효과
+- **실시간 대시보드** — 평균 센서값, 클래스별 카운트, AI 신뢰도, 시스템 로그
+- **상태 전이 추적** — 식물별 상태 변화 감지 및 이벤트 로깅
+
+---
+
+## 🏗️ 시스템 아키텍처
 
 ```mermaid
-graph LR
-    A[Unity 3D\n가상 온실] -->|REST API\n이미지 + 센서 JSON| B[FastAPI 서버]
-    B -->|추론 요청| C[PyTorch AI 모델]
-    C --> D[이미지 인코더\nEfficientNet-B0\n1280-dim]
-    C --> E[센서 인코더\nMLP 3층\n64-dim]
-    D --> F[융합 레이어\nConcat → FC 512 → FC 4]
-    E --> F
-    F -->|분류 결과\n4클래스| B
-    B -->|JSON 응답| A
+flowchart LR
+    A[Unity 3D 가상 온실] -->|센서값 POST| B[FastAPI 서버]
+    B --> C[룰 기반 분류기]
+    B --> D[PyTorch MLP 모델]
+    C --> E[진단 결과 통합]
+    D --> E
+    E -->|JSON 응답| A
+    A --> F[시각화: 색상/파티클/로그]
 ```
 
----
-
-## 분류 클래스
-
-| 클래스 ID | 클래스명 | 설명 |
-|-----------|---------|------|
-| 0 | 정상 (Healthy) | 식물이 건강한 상태 |
-| 1 | 병해 (Disease) | 병원균 감염 또는 병충해 |
-| 2 | 수분부족 (Drought) | 토양 수분 부족 상태 |
-| 3 | 성장단계 (Growth Stage) | 특정 성장 단계 식별 |
+데이터 흐름:
+1. Unity가 1초 주기로 48개 식물 센서값을 일괄 생성
+2. FastAPI 서버가 룰 기반 + PyTorch 추론을 동시 수행
+3. 두 결과를 비교하여 일치율 계산 후 응답
+4. Unity가 응답을 받아 식물 색상·파티클·대시보드를 실시간 갱신
 
 ---
 
-## 기술 스택
+## 🛠️ 기술 스택
 
 | 분류 | 도구 |
 |------|------|
-| 시뮬레이션 | Unity 6 LTS, C# |
-| AI 모델 | PyTorch, EfficientNet-B0 |
-| 서버 | FastAPI, Uvicorn |
+| 시뮬레이션 | Unity 6 LTS (6000.4.4f1), C# |
+| AI 모델 | PyTorch, MLP (4→64→64→4) |
+| 서버 | FastAPI, Uvicorn, Pydantic |
 | 통신 | REST API (JSON) |
-| 개발환경 | VSCode, Windows 11 |
+| 개발환경 | Windows 11, VSCode |
 
 ---
 
-## 1학기 마일스톤
+## 🌿 분류 클래스
 
-| 주차 | 내용 | 산출물 |
-|------|------|--------|
-| 4월 | 환경 구축, 가상 온실 모델링, AI 모델 골격 | 프로젝트 초기 세팅, Unity 씬, 모델 코드 |
-| 5월 | 데이터셋 준비, 모델 학습, Unity-AI 통신 구현 | 학습된 모델(.pt), API 연동 테스트 |
-| 6월 | 통합 테스트, UI 개선 | 통합 테스트 보고서, 개선된 UI |
-| 기말 | 데모 시연 영상, 최종 보고서 | 시연 영상, 최종 보고서 PDF |
+| 클래스 | 색상 | 트리거 조건 (룰) |
+|--------|------|----------------|
+| 정상 (healthy) | 🟢 초록 | 기본 상태 |
+| 병해 (disease) | 🔴 빨강 | 온도 > 32°C 또는 습도 > 90% |
+| 수분부족 (water_shortage) | 🟡 노랑 | 토양수분 < 30% |
+| 성장중 (growth_stage) | 🟩 연두 | 조도 > 700 lx AND 20°C < 온도 < 28°C |
 
 ---
 
-## 폴더 구조
+## 📂 폴더 구조
 
 ```
 virtual-smartfarm/
-├── unity/                    # Unity 3D 프로젝트 (가상 온실 시뮬레이션)
-│   └── .gitkeep
-├── ai_model/                 # PyTorch AI 모델
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── image_encoder.py  # EfficientNet-B0 이미지 인코더
-│   │   ├── sensor_encoder.py # MLP 센서 인코더
-│   │   └── fusion_model.py   # 멀티모달 융합 모델
-│   ├── train.py              # 학습 스크립트
-│   ├── inference.py          # 추론 스크립트
-│   └── requirements.txt      # Python 의존성
+├── unity/                          # Unity 3D 프로젝트
+│   └── VirtualSmartFarm/
+│       └── Assets/Scripts/
+│           ├── GreenhouseGenerator.cs    # 농장 자동 생성
+│           ├── SensorSimulator.cs        # 센서값 시뮬레이션
+│           ├── APIClient.cs              # 서버 통신
+│           ├── PlantStateController.cs   # 식물 상태 시각화
+│           ├── PlantResponse.cs          # 파티클 효과
+│           ├── DashboardUI.cs            # 실시간 대시보드
+│           └── EventLogger.cs            # 시스템 로그
+├── ai_model/
+│   └── plant_ai.py                 # PyTorch 분류기 + 학습/추론
 ├── server/
-│   └── api_server.py         # FastAPI 서버
-├── docs/
-│   ├── architecture.md       # 시스템 아키텍처 상세
-│   └── milestones.md         # 주차별 마일스톤
-├── .gitignore
+│   └── api_server.py               # FastAPI 서버
+├── docs/                           # 문서, 스크린샷, 영상
 └── README.md
 ```
 
 ---
 
-## 실행 방법
+## 🚀 설치 및 실행
 
-### AI 서버 실행
+### 1. Python 환경 (서버)
 
 ```bash
-# 의존성 설치
-cd ai_model
-pip install -r requirements.txt
-
-# 서버 실행
-cd ../server
-uvicorn api_server:app --host 0.0.0.0 --port 8000 --reload
+cd virtual-smartfarm
+pip install -r ai_model/requirements.txt
+python server/api_server.py
 ```
 
-> **TODO:** 모델 학습 완료 후 실행 방법 업데이트 예정
+첫 실행 시 PyTorch 모델 학습이 자동으로 진행됨 (약 1분).  
+이후 실행에서는 저장된 모델(`ai_model/sensor_classifier.pt`)을 자동 로드.
 
-### Unity 클라이언트
+### 2. Unity 프로젝트
 
-> **TODO:** Unity 프로젝트 빌드 및 실행 방법 추가 예정
+1. Unity Hub에서 `unity/VirtualSmartFarm/` 폴더 열기 (Unity 6 LTS 필요)
+2. `SampleScene` 로드
+3. **▶ Play** 버튼
+
+서버가 켜져 있어야 정상 작동. 미연결 시 대시보드 하단에 "통신 오류" 표시.
 
 ---
 
-## 개발자
+## 🧠 PyTorch 모델
 
-| 이름 | 학번 | 소속 |
-|------|------|------|
-| 채우진 | 2101087 | 군산대학교 임베디드소프트웨어학과 |
+### 구조
+
+```python
+SensorClassifier(
+    Linear(4, 64) → ReLU → Dropout(0.2)
+    → Linear(64, 64) → ReLU
+    → Linear(64, 4)
+)
+```
+
+- **입력**: 정규화된 센서값 4개 (온도/습도/토양/조도)
+- **출력**: 4클래스 logits
+- **학습 데이터**: 합성 데이터 8,000건 (룰 기반 라벨 + 5% 라벨 노이즈)
+- **학습 정확도**: 약 97~98%
+- **에폭**: 50, 옵티마이저: Adam (lr=1e-3)
+
+### 추론
+
+```python
+from plant_ai import PlantAI
+ai = PlantAI()
+plant_class, confidence = ai.predict(temp, humidity, soil, light)
+```
+
+---
+
+## 📅 1학기 진행 현황
+
+- [x] 시스템 아키텍처 설계
+- [x] Unity 가상 온실 환경 구축 (48개 식물, 4개 베드)
+- [x] FastAPI 통신 서버 구현
+- [x] 룰 기반 분류기 구현
+- [x] PyTorch MLP 분류 모델 학습 및 추론 통합
+- [x] 실시간 대시보드 UI 구현
+- [x] 자동 대응 시각화 (파티클 효과)
+- [x] 식물 모델 업그레이드 (줄기 + 잎사귀 구조)
+- [x] 데모 시연 영상 제작
+
+---
+
+## 🔮 향후 계획 (2학기)
+
+- 이미지 기반 멀티모달 모델 통합 (EfficientNet-B0 + MLP 융합)
+- 실제 식물 데이터셋 (PlantVillage) 학습 적용
+- 시간 가속 시뮬레이션 (Day/Night cycle)
+- 데이터 로깅 및 히스토리 시각화
+- 다중 작물 종류 지원
+
+---
+
+## 👤 개발자
+
+**채우진** (2101087)  
+군산대학교 임베디드소프트웨어학과
+
+---
+
+## 📄 라이선스
+
+이 프로젝트는 학술 목적의 캡스톤 디자인 작품이다.
