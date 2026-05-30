@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class GreenhouseGenerator : MonoBehaviour
 {
@@ -18,6 +19,8 @@ public class GreenhouseGenerator : MonoBehaviour
     public Material soilMaterial;
     public Material plantMaterial;
 
+    [HideInInspector] public List<GameObject> plants = new List<GameObject>();
+
     void Start()
     {
         GenerateFarm();
@@ -25,6 +28,7 @@ public class GreenhouseGenerator : MonoBehaviour
 
     void GenerateFarm()
     {
+        plants.Clear();
         float totalDepth = (bedCount - 1) * bedSpacing;
         float startZ = -totalDepth / 2f;
 
@@ -71,6 +75,8 @@ public class GreenhouseGenerator : MonoBehaviour
 
             if (plantMaterial != null)
                 plant.GetComponent<Renderer>().material = plantMaterial;
+
+            plants.Add(plant);
         }
     }
 }
