@@ -12,11 +12,27 @@ public class PlantStateController : MonoBehaviour
     private GreenhouseGenerator farm;
     private PlantResponse responseManager;
     private Dictionary<int, string> previousStates = new Dictionary<int, string>();
+    private Dictionary<int, Renderer[]> cachedLeaves = new Dictionary<int, Renderer[]>();
 
     void Start()
     {
         farm = FindAnyObjectByType<GreenhouseGenerator>();
         responseManager = GetComponent<PlantResponse>();
+    }
+
+    Renderer[] GetLeafRenderers(int plantId, GameObject plant)
+    {
+        if (cachedLeaves.ContainsKey(plantId)) return cachedLeaves[plantId];
+
+        List<Renderer> leaves = new List<Renderer>();
+        foreach (var r in plant.GetComponentsInChildren<Renderer>())
+        {
+            if (r.gameObject.name.StartsWith("Leaf"))
+                leaves.Add(r);
+        }
+        Renderer[] arr = leaves.ToArray();
+        cachedLeaves[plantId] = arr;
+        return arr;
     }
 
     public void ApplyDiagnoses(BatchDiagnosis batch)
@@ -34,9 +50,10 @@ public class PlantStateController : MonoBehaviour
             GameObject plant = farm.plants[diag.plant_id];
             if (plant == null) continue;
 
-            Renderer renderer = plant.GetComponent<Renderer>();
-            if (renderer != null)
-                renderer.material.color = new Color(diag.color_r, diag.color_g, diag.color_b);
+            Renderer[] leaves = GetLeafRenderers(diag.plant_id, plant);
+            Color color = new Color(diag.color_r, diag.color_g, diag.color_b);
+            foreach (var r in leaves)
+                r.material.color = color;
 
             string prevState = previousStates.ContainsKey(diag.plant_id) ? previousStates[diag.plant_id] : "unknown";
             if (prevState != diag.plant_class)
