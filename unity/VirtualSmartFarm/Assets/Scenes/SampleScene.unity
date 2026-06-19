@@ -148,16 +148,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebc2c411a5d799347af62de2fa68944c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GreenhouseGenerator
-  bedCount: 4
-  plantsPerBed: 12
-  bedLength: 16
-  bedWidth: 1.2
+  bedCount: 1
+  plantsPerBed: 6
+  bedLength: 9
+  bedWidth: 1.5
   bedHeight: 0.2
   bedSpacing: 3
-  plantHeight: 0.8
-  plantScale: 0.3
+  leafCountMin: 3
+  leafCountMax: 7
+  plantBaseHeight: 0.45
   soilMaterial: {fileID: 2100000, guid: 01b245305ba694947984f2105ea54d35, type: 2}
   plantMaterial: {fileID: 2100000, guid: 209ae404805b81e47b57135770ce6387, type: 2}
+  stemMaterial: {fileID: 0}
+  plants: []
 --- !u!4 &116919582
 Transform:
   m_ObjectHideFlags: 0
@@ -285,6 +288,139 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &510992063
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 510992067}
+  - component: {fileID: 510992066}
+  - component: {fileID: 510992065}
+  - component: {fileID: 510992064}
+  - component: {fileID: 510992070}
+  - component: {fileID: 510992069}
+  - component: {fileID: 510992068}
+  m_Layer: 0
+  m_Name: SimulationManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &510992064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 510992063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30eb8274ff5db214691a9188922a43dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlantStateController
+  healthyCount: 0
+  diseaseCount: 0
+  waterShortageCount: 0
+  growthStageCount: 0
+  aiAvgConfidence: 0
+  ruleAiAgreement: 0
+--- !u!114 &510992065
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 510992063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1a668ca1c336f4469f9c5bc1c41993c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::APIClient
+  serverUrl: http://localhost:8000
+  requestInterval: 3
+  lastStatus: "\uB300\uAE30 \uC911"
+  totalRequests: 0
+--- !u!114 &510992066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 510992063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe438afa99035a540b4051d8e02991ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SensorSimulator
+  baseTemperature: 25
+  baseHumidity: 60
+  baseSoilMoisture: 50
+  baseLight: 800
+  tempVariance: 5
+  humidityVariance: 12
+  soilVariance: 18
+  lightVariance: 150
+  jitter: 0.5
+  lastAvgTemp: 0
+  lastAvgHumidity: 0
+  lastAvgSoil: 0
+  lastAvgLight: 0
+--- !u!4 &510992067
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 510992063}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.69259, y: 0, z: 6.07576}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &510992068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 510992063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c5a03b0b0597ad4eb10854a735b447d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlantResponse
+--- !u!114 &510992069
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 510992063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d4dfa46dee1f984f8d6e49dc9728c15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EventLogger
+  maxLogs: 6
+--- !u!114 &510992070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 510992063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ac378d830cc0814c85061894b437b58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DashboardUI
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -441,7 +577,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 60
+  field of view: 55
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -467,13 +603,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalRotation: {x: 0.17364816, y: 0, z: 0, w: 0.9848078}
+  m_LocalPosition: {x: 0, y: 3.5, z: -6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 20, y: 0, z: 0}
 --- !u!1 &1430790761
 GameObject:
   m_ObjectHideFlags: 0
@@ -935,3 +1071,4 @@ SceneRoots:
   - {fileID: 2054226210}
   - {fileID: 1623975076}
   - {fileID: 116919582}
+  - {fileID: 510992067}
