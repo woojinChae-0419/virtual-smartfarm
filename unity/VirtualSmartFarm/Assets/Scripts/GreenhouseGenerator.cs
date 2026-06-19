@@ -3,20 +3,20 @@ using System.Collections.Generic;
 
 public class GreenhouseGenerator : MonoBehaviour
 {
-    [Header("밭 구조")]
-    public int bedCount = 4;
-    public int plantsPerBed = 12;
-    public float bedLength = 16f;
-    public float bedWidth = 1.2f;
-    public float bedHeight = 0.2f;
+    [Header("밭 구조 (시연용 축소)")]
+    public int bedCount = 1;
+    public int plantsPerBed = 6;
+    public float bedLength = 9f;
+    public float bedWidth = 1.5f;
+    public float bedHeight = 0.25f;
     public float bedSpacing = 3f;
 
     [Header("식물 설정")]
-    public int leafCountMin = 3;
-    public int leafCountMax = 5;
-    public float plantBaseHeight = 0.45f;
+    public int leafCountMin = 4;
+    public int leafCountMax = 6;
+    public float plantBaseHeight = 0.9f;
 
-    [Header("색상 (선택)")]
+    [Header("머티리얼")]
     public Material soilMaterial;
     public Material plantMaterial;
     public Material stemMaterial;
@@ -66,7 +66,8 @@ public class GreenhouseGenerator : MonoBehaviour
 
     void CreatePlant(float x, float baseY, float z, int bedIndex, int plantIndex)
     {
-        GameObject plant = new GameObject($"Plant_{bedIndex}_{plantIndex}");
+        int plantId = bedIndex * plantsPerBed + plantIndex;
+        GameObject plant = new GameObject($"Plant_{plantId:D2}");
         plant.transform.position = new Vector3(x, baseY, z);
         plant.transform.parent = this.transform;
 
@@ -75,7 +76,7 @@ public class GreenhouseGenerator : MonoBehaviour
         stem.name = "Stem";
         stem.transform.parent = plant.transform;
         stem.transform.localPosition = new Vector3(0, plantBaseHeight / 2f, 0);
-        stem.transform.localScale = new Vector3(0.06f, plantBaseHeight / 2f, 0.06f);
+        stem.transform.localScale = new Vector3(0.1f, plantBaseHeight / 2f, 0.1f);
         if (stemMaterial != null)
             stem.GetComponent<Renderer>().material = stemMaterial;
         else
@@ -93,8 +94,8 @@ public class GreenhouseGenerator : MonoBehaviour
 
             float angleDeg = baseAngleOffset + (360f / leafCount) * i + Random.Range(-20f, 20f);
             float rad = angleDeg * Mathf.Deg2Rad;
-            float radius = 0.13f + Random.Range(-0.03f, 0.05f);
-            float heightOffset = plantBaseHeight * 0.6f + Random.Range(-0.05f, 0.15f);
+            float radius = 0.2f + Random.Range(-0.04f, 0.06f);
+            float heightOffset = plantBaseHeight * 0.65f + Random.Range(-0.08f, 0.2f);
 
             leaf.transform.localPosition = new Vector3(
                 Mathf.Cos(rad) * radius,
@@ -108,12 +109,16 @@ public class GreenhouseGenerator : MonoBehaviour
                 Random.Range(-15f, 15f)
             );
 
-            float leafSize = Random.Range(0.13f, 0.19f);
+            float leafSize = Random.Range(0.18f, 0.26f);
             leaf.transform.localScale = new Vector3(leafSize * 0.6f, leafSize, leafSize * 0.6f);
 
             if (plantMaterial != null)
                 leaf.GetComponent<Renderer>().material = new Material(plantMaterial);
         }
+
+        // 라벨 컴포넌트 추가
+        PlantLabel label = plant.AddComponent<PlantLabel>();
+        label.plantId = plantId;
 
         plants.Add(plant);
     }
